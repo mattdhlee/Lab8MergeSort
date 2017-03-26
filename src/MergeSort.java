@@ -1,9 +1,35 @@
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by Matt on 2017-03-23.
  */
 public class MergeSort {
+
+    static Random rand = new Random();
+
+    public enum MergeFunctions {
+        SIMPLE, MEMALLOC, ITERATIVE
+    }
+
+    static void RandomlyPermute(int[] A) {
+        //Random rand = new Random();
+        for (int i = 0; i < A.length; i++) {
+            int randInt = rand.nextInt(A.length-i) + i;
+            int tmp = A[i];
+            A[i] = A[randInt];
+            A[randInt] = tmp;
+        }
+    }
+
+    static int[] GenerateA(int n) {
+        int[] A = new int[n];
+        for (int i = 0; i < n; i++) {
+            A[i] = i;
+        }
+        RandomlyPermute(A);
+        return A;
+    }
 
 
     private static void simpleMergeSort(int[] A, int p, int r) {
@@ -78,24 +104,137 @@ public class MergeSort {
             A[i++] = scratchSpace[m++];
         }
     }
-
+    //iterative version
     private static void iterativeMergeSort(int[] A, int[] scratchSpace) {
-        
+        int subLength;
+        int r;//end of right array
+
+        for(subLength=2;subLength<=A.length;subLength*=2){
+            int subMid = subLength/2;
+            for(r=subLength;r<=A.length;r+=subLength){
+                scratchMerge(A,scratchSpace,r-subLength,r-subMid-1,r-1);//decrement 1 because we want to pass in indexes.
+            }
+
+            //edge cases
+            if(r>A.length) { //check if there were elements left at the end
+                if(r-subLength >= A.length){
+                    continue;
+                }
+                int temp = r;
+                r = A.length;
+                int start = temp - (subLength*2);
+                scratchMerge(A,scratchSpace,start,start+subLength,r-1);
+            }
+        }
+        if(subLength>A.length && subLength/2<A.length) {
+            subLength = subLength/2;
+            r = A.length;
+            scratchMerge(A,scratchSpace,0,subLength-1,r-1);
+        }
+
+    }
+
+
+    //test functions
+
+    static double MergeExperiment(int[] A, MergeFunctions mergeFunction) {
+        int numRuns = 5;
+        long totalMillis = 0;
+        int [] CopyA = new int[A.length];
+        for (int i = 0; i < numRuns; ++i)
+        {
+            long startMillis = 0;
+            System.arraycopy(A, 0, CopyA, 0, A.length);
+            if(mergeFunction == MergeFunctions.SIMPLE) {
+                startMillis = System.currentTimeMillis();
+                simpleMergeSort(A,0,A.length-1);
+            }
+            else if(mergeFunction == MergeFunctions.MEMALLOC) {
+                startMillis = System.currentTimeMillis();
+                int[] scratchSpace = new int[A.length];
+                scratchMergeSort(A,scratchSpace,0,A.length-1);
+            }
+            else if(mergeFunction == MergeFunctions.ITERATIVE) {
+                startMillis = System.currentTimeMillis();
+                int[] scratchSpace = new int[A.length];
+                iterativeMergeSort(A,scratchSpace);
+            }
+            totalMillis += (System.currentTimeMillis() - startMillis);
+        }
+
+        return (((float)totalMillis)/numRuns)/1000.0;
+    }
+
+
+    static void TestMerge() {
+        System.out.println("Timing Select");
+
+        System.out.printf("%15s %8s %8s %8s%n \n", "n", "Simple", "MemAlloc", "Iterative");
+
+        for (int i = 1; i > 0 && i < 200000000; i=i*2) {
+            int[] A = GenerateA(i);
+            System.out.printf("%15d ", i);
+            double timeSimple = MergeExperiment(A, MergeFunctions.SIMPLE);
+            double timeMemAlloc = MergeExperiment(A, MergeFunctions.MEMALLOC);
+            double timeIterative = MergeExperiment(A, MergeFunctions.ITERATIVE);
+            System.out.printf("%8.2f %8.2f %8.2f \n", timeSimple, timeMemAlloc, timeIterative);
+        }
+    }
+
+    //helper test function to test all merge sort functions
+    static boolean test() {
+        final int SIZE = rand.nextInt(250) + 1;
+        System.out.printf("Testing array with size: %d \n",SIZE);
+        int[] testArray = GenerateA(SIZE);
+
+        //test simple merge sort
+        simpleMergeSort(testArray,0,SIZE-1);
+        for(int i=0;i<SIZE;i++) {
+            if(testArray[i] != i) {
+                System.out.println("Simple mergesort failed.");
+                return false;
+            }
+        }
+
+        RandomlyPermute(testArray);
+        int[] scratchSpace = new int[SIZE];
+        //test 1 mem alloc merge sort
+        scratchMergeSort(testArray,scratchSpace,0,SIZE-1);
+        for(int i=0;i<SIZE;i++) {
+            if(testArray[i] != i) {
+                System.out.println("MemAlloc mergesort failed.");
+                return false;
+            }
+        }
+
+        RandomlyPermute(testArray);
+        scratchSpace = new int[SIZE];
+        iterativeMergeSort(testArray,scratchSpace);
+        for(int i=0;i<SIZE;i++) {
+            if(testArray[i] != i) {
+                System.out.println("Iterative mergesort failed.");
+                return false;
+            }
+        }
+         return true;
     }
 
     public static void main(String[] args) {
         //simple merge test
-        int[] testArray = {4, 3, 7, 8, 1, 0, 9, 2, 6, 5};
-        System.out.println(Arrays.toString(testArray));
-        simpleMergeSort(testArray, 0, 9);
-        System.out.println(Arrays.toString(testArray));
-        //one mem alloc merge test
-        int[] testArray2 = {4, 3, 7, 8, 1, 0, 9, 2, 6, 5};
-        int[] scratchSpace = new int[testArray2.length];
-        System.out.println(Arrays.toString(testArray2));
-        scratchMergeSort(testArray2,scratchSpace,0,9);
-        System.out.println(Arrays.toString(testArray2));
 
+        if (args.length > 0) {
+            if (args[0].equals("--test")) {
+                boolean testResult = test();
+                if(testResult) {
+                    System.out.println("All mergesort tests have passed.");
+                }
+            } else if (args[0].equals("--time")) {
+                TestMerge();
+            } else {
+                System.out.print("Unrecognized command: ");
+                System.out.println(args[0]);
+            }
+        }
     }
 
 }
