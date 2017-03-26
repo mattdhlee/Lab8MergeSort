@@ -1,0 +1,25 @@
+Hypotheses:
+The iterative merge sort function will give the most speed improvement. Because it
+avoids new allocation to the stack frame every recursive call.
+
+
+1) Describe how I set up the experiments
+-> I set up the experiments by referencing to the tests in Lab7. When I was initially
+implementing the merge functions I worked with an array of size 10 with every element being
+distinct to make it easier for me to debug.
+
+2) How do the variants of merge sort compare to each other in terms of running time?
+-> All three variants of merge sort run in θ(nlogn).
+
+3)Based on the above, describe the efficacy of the different methods for speeding up
+recursive algorithms.
+-> The simple merge sort is better than other sorting algorithms because it is a
+recursive function. The first improved merge sort is faster than the simple merge sort
+because it only has one memory allocation instead of allocating memory for both the left
+and the right for every recursive call.
+The iterative function still does not recurse. Rather it uses a bottom-up method by looping.
+Because the function is iterative, it does not have to call to the stack as many times as
+a recursion. Technically, I think iterative version should be the fastest.
+
+However, most of the times when I run my tests, the recursive improved merge sort is slightly
+faster than the iterative merge sort. 
