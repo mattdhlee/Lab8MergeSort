@@ -106,30 +106,31 @@ public class MergeSort {
     }
     //iterative version
     private static void iterativeMergeSort(int[] A, int[] scratchSpace) {
-        int subLength;
+        int subLength;//length of the subarray from bottom up
+        int start;//used for edge cases
+        int end;//used for edge cases
         int r;//end of right array
 
-        for(subLength=2;subLength<=A.length;subLength*=2){
-            int subMid = subLength/2;
+        for(subLength=2; subLength<=A.length; subLength*=2){
+            int subMid = subLength / 2;
             for(r=subLength;r<=A.length;r+=subLength){
                 scratchMerge(A,scratchSpace,r-subLength,r-subMid-1,r-1);//decrement 1 because we want to pass in indexes.
             }
-
             //edge cases
             if(r>A.length) { //check if there were elements left at the end
-                if(r-subLength >= A.length){
+                if(r-subLength >= A.length) {
                     continue;
                 }
-                int temp = r;
-                r = A.length;
-                int start = temp - (subLength*2);
-                scratchMerge(A,scratchSpace,start,start+subLength,r-1);
+                end = A.length;
+                start = r - (subLength * 2);
+                scratchMerge(A, scratchSpace, start, start + subLength - 1, end - 1);
+
             }
         }
         if(subLength>A.length && subLength/2<A.length) {
+            end = A.length;
             subLength = subLength/2;
-            r = A.length;
-            scratchMerge(A,scratchSpace,0,subLength-1,r-1);
+            scratchMerge(A,scratchSpace,0,subLength-1,end-1);
         }
 
     }
