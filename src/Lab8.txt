@@ -22,4 +22,15 @@ Because the function is iterative, it does not have to call to the stack as many
 a recursion. Technically, I think iterative version should be the fastest.
 
 However, most of the times when I run my tests, the recursive improved merge sort is slightly
-faster than the iterative merge sort. 
+faster than the iterative merge sort.
+
+
+
+
+Experimental Setup
+-> processes are running at the same time -> confuse running times
+-> Java's garbage collection
+    - automatically frees memory
+    - can skew results
+-> different speeds based on machine
+-> reusing same memory -> operating system already allocated memory
